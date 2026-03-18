@@ -11,7 +11,7 @@ Connection au level00, découverte du système de fichier:
     -r-xr-x---+ 1 level00 level00  675 Apr  3  2012 .profile`
  ```
 
- Recherche de fichiers appartenant à flag00 et découverte du fichier "john"
+ Recherche de fichiers appartenant à flag00 et découverte du fichier ```john```
  ``` bash
  level00@SnowCrash:~$ find / -user flag00 2</dev/null
 /usr/sbin/john
@@ -29,7 +29,7 @@ su: Authentication failure
 
 ```
 
-Utilisation du code César sur le site dcode.fr, un des codes a du sens:
+Utilisation du ```Code César``` sur le site ```dcode.fr```, un des codes a du sens:
 
 ![dcode](dcode_code_cesar.png "dcode")
 
