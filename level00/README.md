@@ -1,6 +1,6 @@
 # LEVEL00
 
-Connection au level00, decouverte du systeme de fichier:
+Connection au level00, découverte du système de fichier:
 ```bash
     level00@SnowCrash:~$ ls -la
     total 12
@@ -11,14 +11,14 @@ Connection au level00, decouverte du systeme de fichier:
     -r-xr-x---+ 1 level00 level00  675 Apr  3  2012 .profile`
  ```
 
- Recherche de fichiers appartenant a flag00 et decouverte de fichiers "john"
+ Recherche de fichiers appartenant à flag00 et découverte du fichier "john"
  ``` bash
  level00@SnowCrash:~$ find / -user flag00 2</dev/null
 /usr/sbin/john
 /rofs/usr/sbin/john
 ```
 
-Decouverte d'une chaine de caractere, elle ne fonctionne pas pour se connecter a flag00
+Découverte d'une chaine de caractère, elle ne fonctionne pas pour se connecter à flag00
 ``` bash 
 level00@SnowCrash:~$ cat /usr/sbin/john
 cdiiddwpgswtgt
@@ -29,12 +29,12 @@ su: Authentication failure
 
 ```
 
-Utilisation du code Cesar sur le site dcode.fr, un des codes a du sens:
-``` bash
-notoohardhere
-```
+Utilisation du code César sur le site dcode.fr, un des codes a du sens:
 
-Il fonctionne pour recuperer le flag00
+![dcode](dcode_code_cesar.png "dcode")
+
+
+Il fonctionne pour récuperer le flag00
 ``` bash
 level00@SnowCrash:~$ su flag00
 Password: 
