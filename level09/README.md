@@ -69,9 +69,40 @@ La phrase vue avec `ltrace()` "You should not reverse this" nous indique une pis
 
 Nous créons donc un script pour inverser la logique de l'executable level09. Donc soustraire pour chaque caractère dans la chaine la position de son index.
 
+``` bash
+level09@SnowCrash:/tmp$ cat script.c
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
-AJOUTER SCRIPT
+int	main(int argc, char **argv)
+{
+	if (argc != 2)
+		return 1;
 
+	int fd = open(argv[1], O_RDONLY);
+	if (fd < 0)
+		return 1;
+	
+	char buffer[1024]; 
+	int size = read(fd, buffer, 1024);
+
+	int i = 0;
+	while (i < size)
+	{
+		if (buffer[i] == '\n')
+			break;
+		char c = buffer[i] - i;
+		write(1, &c, 1);
+		i++;
+	}
+	write(1, "\n", 1);
+	close(fd);
+	return 0;
+}
+
+```
 
 
 ``` bash
