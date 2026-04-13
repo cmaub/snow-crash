@@ -28,7 +28,7 @@ mask::r-x
 other::---
 ```
 
-L'utilisation de `ltrace` révèle que le programme prend en argument un fichier, qu'il va ouvrir, lire et restituer lson contenu (`open()`, `read()`, `write()`). Mais nous ne pouvons pas transmettre directement le fichier token au programme, une protection vérifie en effet que le nom du fichier ne doit pas comporter le mot "token".
+L'utilisation de `ltrace` révèle que le programme prend en argument un fichier, qu'il va ouvrir, lire et restituer son contenu (`open()`, `read()`, `write()`). Mais nous ne pouvons pas transmettre directement le fichier token au programme, une protection vérifie en effet que le nom du fichier ne doit pas comporter le mot "token".
 
 ``` bash
 level08@SnowCrash:~$ ltrace ./level08 /tmp/test
@@ -48,8 +48,8 @@ Afin de pouvoir lire le contenu du fichier token on va donc créer un lien symbo
 Nous créeons un lien symbolique car n'ailant les permissions que pour créer de nouveau fichier que dans `/tmp`, le dossier se situant dans une partition différente de celle de `/home`, il n'est pas possible de générer un lien physique.
 
 ``` bash
-level08@SnowCrash:~$ ln -s /home/user/level08/token /tmp/haha
-level08@SnowCrash:~$ ./level08 /tmp/haha
+level08@SnowCrash:~$ ln -s /home/user/level08/token /tmp/link
+level08@SnowCrash:~$ ./level08 /tmp/link
 quif5eloekouj29ke0vouxean
 
 level08@SnowCrash:~$ su flag08
