@@ -2,7 +2,7 @@
 
 Lorsque l'on se connecte au level05 un message s'affiche sur stdout:
 
-``` bash
+```Diff
 ➜  ~ ssh level05@192.168.56.101 -p 4242
 	   _____                      _____               _     
 	  / ____|                    / ____|             | |    
@@ -15,12 +15,12 @@ Lorsque l'on se connecte au level05 un message s'affiche sur stdout:
 
           192.168.56.101 
 level05@192.168.56.101's password: 
-You have new mail
++You have new mail
 ```
 
 On va chercher dans le dossier ```/var```. Ce dossier est destiné aux fichiers dont le contenu ou la taille évolue, on y trouve les données dynamiques du système (contrairement à `/usr` et `/bin` qui contiennent des fichiers statiques).
 
-On y trouve notamment les logs, le cache, les spools (les files d'attente pour l'impression ou les mails sortants). Les mails sont aussi traditionnellement dans le dossier ```/var/mail```, c'est l'emplacement standard pour les boites de réception locales des utilisateurs sur un système Unix/Linux.
+On y trouve notamment les logs, le cache, les spools (les files d'attente pour l'impression ou les mails sortants). Les mails sont aussi traditionnellement dans le dossier ```/var/mail```, c'est l'emplacement standard pour les boîtes de réception locales des utilisateurs sur un système Unix/Linux.
 
 ``` diff
 level05@SnowCrash:/$ cd var
@@ -87,7 +87,7 @@ drwxrwxr-x+ 2 root root 40 Mar  5 10:43 .
 drwxr-xr-x  1 root root 60 Mar  5 10:43 ..
 ```
 
-En observant cette sortie l'utilisateur non root n'a le droit que de le lecture et d'execution.
+En observant cette sortie l'utilisateur non root n'a le droit que de lecture et d'execution.
 Mais le bit `+` signifie qu'il y a des précisions sur les permissions des ACL (Access Control Lists) à regarder avec `getfacl`. Ces précisions prévalent sur les permissions classiques, l'utilisateur level05 à donc les droits de lecture, d'écriture et d'exécution.
 
 
@@ -111,13 +111,13 @@ default:other::r-x
 
 ```
 
-On va donc creer un script dans le dossier `/opt/openarenaserver` pour affficher le resultat de la commande getflag.
+On va donc créer un script dans le dossier `/opt/openarenaserver` pour affficher le résultat de la commande getflag.
 
 De manière historique, les sorties des taches cron étaient envoyées par mail à l'utilisateur. Par défaut, le script est lancé ici en arrière plan, on ne verra donc pas son resultat sur la sortie standard. Nous allons donc rediriger le resultat de getflag dans un autre fichier pour pouvoir le lire.
 
 On ne peux pas mettre le resultat dans /opt/openarenaserver car le script supprime chaque fichier présent dans le dossier juste après avoir executé le script. On va donc rediriger la sortie de la commande vers `/tmp`. `/tmp` est un répertoire dont les permissions permettent généralement à n'importe qui d'y écrire sans pouvoir supprimer les fichiers des autres.
 
-Le fichier créée le sera avec les permissions de flag05 qui est l'utilisateur qui exécute le script.
+Le fichier créé le sera avec les permissions de flag05 qui est l'utilisateur qui exécute le script.
 
 ``` bash
 level05@SnowCrash:/opt/openarenaserver$ echo "getflag > /tmp/myfile" > script.sh
