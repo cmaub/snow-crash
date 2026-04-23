@@ -48,7 +48,7 @@ $r = x($argv[1], $argv[2]); print $r;
 ```
 La partie critique ici concerne `$a = file_get_contents($y)` et `preg_replace("/(\[x (.*)\])/e", "y(\"\\2\")", $a)`.
 
-La fonction `file_get_contents()` prend le premier argument passé en parametre (`$argv[1]`, passé à la fonction `x` en tant que `$y`), elle permet de récupérer le contenu du fichier.
+La fonction `file_get_contents()` prend le premier argument passé en paramètre (`$argv[1]`, passé à la fonction `x` en tant que `$y`), elle permet de récupérer le contenu du fichier.
 La fonction `preg_replace()` va chercher dans le contenu du fichier en question, elle permet de lire des expressions en REGEX, la faille se trouve avec le flag `\e` (`eval()`) qui va considérer le texte de remplacement comme une instruction en php, on va donc pouvoir y glisser une commande système. On appelle `\e` le Deprecated Regex Eval Modifier (il a été supprimé à partir de PHP 7.0 justement  cause de cette faille).
 
 On comprend donc que l'on va devoir créer un fichier dans lequel on retrouvera le motif `/(\[x (.*)\])/e` et l'instruction système `getflag`.
@@ -119,7 +119,7 @@ echo $output;
 
 Il reste plus qu'à lancer le binaire `level06` qui lui, va lancer `level06.php` avec les drtoits de `flag06`
 
-```
+```Diff
 level06@SnowCrash:~$ ./level06
-Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
++Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
 ```
