@@ -30,16 +30,16 @@ sub x {
 x(param("x"));
 ```
 
-Ce script permet d'afficher l'argument passé dans les parametres http.
-L'arguemnt de x est récupéré via param qui récupère le paramètre http 'x'.
+Ce script permet d'afficher l'argument passé dans les paramètres http.
+L'argument de x est récupéré via param qui récupère le paramètre http 'x'.
 Dans la fonction x, la variable ```$y``` est initialisée avec la valeur de ```$_[0]``` qui désigne le premier argument passé en paramètre, donc x, le paramètre entré par l'utilisateur. 
 Tout ce qui se situe entre les backticks est évalué et exécuté par un sous-shell avant la principale commande ```print``` et la sortie de cette commande devient l'argument de ```print```. On va donc pouvoir utiliser une technique d'injection shell pour trouver le resutat de ```getflag```. Avec ```2>&1``` on affiche aussi les erreurs dans stdout, sans cette redirection on ne verrait pas si la commande était mal formatée.
 
-Le script souffre d'un manque de sanitization des entrées utilisateur : le contenu de $y est interprété durectement par le sous-shell.
+Le script souffre d'un manque de sanitization des entrées utilisateur : le contenu de $y est interprété directement par le sous-shell.
 
 On va pouvoir utiliser ```curl``` pour exécuter le script via localhost sur le port 4747.
 On envoit la substitution de commande ```'$(getflag)'``` au script via l'argument x.
-L'utilisation des simple quotes empéchent l'expansion locale de la commande par notre propre shell, sans quoi ```$(getflag)``` serait exécuté en tant que level04.
+L'utilisation des simple quotes empêchent l'expansion locale de la commande par notre propre shell, sans quoi ```$(getflag)``` serait exécuté en tant que `level04`.
 Le shell du script en recevant ```$(getflag)``` ne va pas l'interpréter comme une simple chaine de caractère mais va exécuter ce qui se trouve entre parenthèse et remplacer le texte par son résultat.
 
 ``` diff
