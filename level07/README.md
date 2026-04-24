@@ -45,8 +45,8 @@ system("/bin/echo level07 "level07
 <... system resumed> )                                                                   = 0
 +++ exited (status 0) +++
 ```
-En redefinisaant `LOGNAME` avec une substitution de commande (backticks) on force le sous-shell invoqué par `system()` à exécuter `getflag` au lieu de simplement afficher le contenu du texte.
-L'utilisation des guillemets simples dans l'export de la variable est indispenable pour eviter que notre shell actuel n'execute pas getflag avant meme que l'on lance le programme.
+En redéfinissant `LOGNAME` avec une substitution de commande (backticks) on force le sous-shell invoqué par `system()` à exécuter `getflag` au lieu de simplement afficher le contenu du texte.
+L'utilisation des guillemets simples dans l'export de la variable est indispensable pour éviter que notre shell actuel n'execute pas getflag avant meme que l'on lance le programme.
 
 ``` bash
 level07@SnowCrash:~$ export LOGNAME='`getflag`'
