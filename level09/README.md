@@ -1,6 +1,7 @@
 # LEVEL09
 
-Le système de fichier comporte un exécutable level09 pour lesquels nous avons le SUID activé et un fichier token.
+Le système de fichier comporte un exécutable level09 pour lequel nous avons le SUID activé et un fichier `token`.
+
 ``` bash
 level09@SnowCrash:~$ ls -la
 total 24
@@ -26,7 +27,7 @@ puts("You should not reverse this"You should not reverse this
 ```
 
 `ltrace()` est utilisé ici comme une protection contre l'analyse dynamique.
-En effet un programme ne peut etre tracé que par un seul processus parent. Ainsi le programme lancé avec `ltrace()`, arrive à `ptrace()` qui renvoit -1 et le programme s'arrete en affichant un message d'erreur. Cela nous oblige de passer par une analyse de type "Boite Noire" (Back-box-testing).
+En effet un programme ne peut être tracé que par un seul processus parent. Ainsi le programme lancé avec `ltrace()`, arrive à `ptrace()` qui renvoit -1 et le programme s'arrete en affichant un message d'erreur. Cela nous oblige de passer par une analyse de type "Boite Noire" (Back-box-testing).
 
 Le fichier token comprend une chaine de caractère qui ne permet pas de se connecter à flag09:
 
@@ -50,6 +51,7 @@ level09@SnowCrash:~$ ./level09 123456
 
 La chaine de sortie correspond au caractère de la tables ASCII additionné à son index dans la chaine.
 Donc pour "aaaaaa"
+
 ```
 'a' = 'a' + 0 == 'a'
 'a' = 'a' + 1 == 'b'
@@ -60,6 +62,7 @@ Donc pour "aaaaaa"
 ```
 
 La conversion de la chaine présente dans token ne donne rien de probant:
+
 ``` bash
 level09@SnowCrash:~$ ./level09 'f4kmm6p|=�p�n��DB�Du{��'
 f5mpq;v�E���|���~����[��`������
@@ -117,5 +120,5 @@ Check flag.Here is your token : s5cAJpM8ev6XHw998pRWG728z
 
 
 Petit point sur la différence entre le chiffrement et l'obfuscation:
-- Le chiffrement transforme une information pour a rendre iisible à quiconque ne possède pas une clé secréte.
-- L'obfuscation vis à rendre un message ou un code difficie à conprendre sans utiliser de secret externe.
+- Le chiffrement transforme une information pour la rendre illisible à quiconque ne possède pas une clé secrète.
+- L'obfuscation vise à rendre un message ou un code difficie à comprendre sans utiliser de secret externe.
