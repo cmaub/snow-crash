@@ -1,6 +1,6 @@
 # LEVEL08
 
-Le système de fichier nous informe que nous avons un fichier "token" pour lequel nous n'avons aucune permission et un executable "level08" que nous pouvons exécuter en SUID.
+Le système de fichier nous informe que nous avons un fichier `token` pour lequel nous n'avons aucune permission et un executable `level08` que nous pouvons exécuter en SUID.
 
 ``` bash
 level08@SnowCrash:~$ ls -la
@@ -28,7 +28,7 @@ mask::r-x
 other::---
 ```
 
-L'utilisation de `ltrace` révèle que le programme prend en argument un fichier, qu'il va ouvrir, lire et restituer son contenu (`open()`, `read()`, `write()`). Mais nous ne pouvons pas transmettre directement le fichier token au programme, une protection vérifie en effet que le nom du fichier ne doit pas comporter le mot "token".
+L'utilisation de `ltrace` révèle que le programme prend en argument un fichier, qu'il va ouvrir, lire et restituer son contenu (`open()`, `read()`, `write()`). Mais nous ne pouvons pas transmettre directement le fichier `token` au programme, une protection vérifie en effet que le nom du fichier ne doit pas comporter le mot "token".
 
 ``` bash
 level08@SnowCrash:~$ ltrace ./level08 /tmp/test
@@ -42,10 +42,10 @@ write(1, "coucou\n", 7coucou
 
 ```
 
-Ici on ne peut pas passer directement directement la commande `getflag` dans les appel systèmes `open()`, `read()` et `write()` (contrairement à `system()`).
+Ici on ne peut pas passer directement directement la commande `getflag` dans les appels systèmes `open()`, `read()` et `write()` (contrairement à `system()`).
 
-Afin de pouvoir lire le contenu du fichier token on va donc créer un lien symbolique avec `ln -s`. 
-Nous créeons un lien symbolique car n'ailant les permissions que pour créer de nouveau fichier que dans `/tmp`, le dossier se situant dans une partition différente de celle de `/home`, il n'est pas possible de générer un lien physique.
+Afin de pouvoir lire le contenu du fichier token on va donc créer un lien symbolique avec `ln -s`.
+Nous créons un lien symbolique car n'ayant les permissions pour créer de nouveau fichier que dans `/tmp`, le dossier se situant dans une partition différente de celle de `/home`, il n'est pas possible de générer un lien physique.
 
 ``` bash
 level08@SnowCrash:~$ ln -s /home/user/level08/token /tmp/link
