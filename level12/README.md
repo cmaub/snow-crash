@@ -69,7 +69,7 @@ L'absence de sanitisation (nettoyage) de la variable `$xx` permet une injection 
 
 La variable `$xx` est modifiée par deux obstacles pour l'injection de commande :
 - `tr/a-z/A-Z/` : `tr` convertit les minuscules en majuscules, il permet une opération de translittération. Ainsi elle neutralise toute commande système classique (ex: `ls` devient `LS`)
-- `s/\s.*//` : effectue une troncation au premier espace. `s/` (en référence à la commande `sed`) remplace les whitespaces(`\s`), tous les caractères (`.`) qui suivent un nombre indéfini de fois (`*`) par rien (`//`). Elle empeche l'utilisation d'arguments ou de redirection dans l'injection (ex: `getflag > /tmp/file` devient `getflag`).
+- `s/\s.*//` : effectue une troncation au premier espace. `s/` (en référence à la commande `sed`) remplace les whitespaces(`\s`), tous les caractères (`.`) qui suivent un nombre indéfini de fois (`*`) par rien (`//`). Elle empêche l'utilisation d'arguments ou de redirection dans l'injection (ex: `getflag > /tmp/file` devient `GETFLAG`).
 
 La commande entourée de backticks va ensuite permettre d'exécuter le payload en invoquant un sous shell : ```@output = `egrep "^$xx" /tmp/xd 2>&1`;```
 
@@ -85,6 +85,7 @@ getflag > /tmp/result
 On va nommer notre fichier avec des majuscules pour survivre à la translittération de `$xx`
 
 Nous donnons toutes les permissions à l'utilisateur avec `chmod`:
+
 ``` bash
 level12@SnowCrash:~$ chmod +x /tmp/SCRIPT
 level12@SnowCrash:~$ ls -la /tmp/SCRIPT
@@ -106,5 +107,5 @@ Check flag.Here is your token : g1qKMiRpXf53AWhDaU7FEkczr
 
 L'argument transmis au script perl se présentera alors de cette manière dans le code:
 ``` perl
-@output = `egrep "`/*/SCRIPT`" /tmp/xd 2>&1`;
+@output = `egrep "^`/*/SCRIPT`" /tmp/xd 2>&1`;
 ```
