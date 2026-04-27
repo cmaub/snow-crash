@@ -2,6 +2,7 @@
 
 
 L'inspection du système de fichier avec `ls -la` révèle un exécutable `level13`.
+
 ``` bash
 level13@SnowCrash:~$ ls -la
 total 20
@@ -13,16 +14,18 @@ d--x--x--x 1 root    users    340 Aug 30  2015 ..
 -r-x------ 1 level13 level13  675 Apr  3  2012 .profile
 ```
 L'exécution du fichier puis l'utilisation de `ltrace` indique que nous alons devoir modifier l'uid de l'utilisateur, la fonction `getuid()` renvoyant actuellement `2013`:
-``` bash
+
+```bash
 level13@SnowCrash:~$ ./level13
 UID 2013 started us but we we expect 4242
 ```
-``` bash
+
+```Diff
 level13@SnowCrash:~$ ltrace ./level13
 __libc_start_main(0x804858c, 1, 0xbffff7f4, 0x80485f0, 0x8048660 <unfinished ...>
-getuid()                                                               = 2013
-getuid()                                                               = 2013
-printf("UID %d started us but we we expe"..., 2013UID 2013 started us but we we expect 4242
++getuid()                                                               = 2013
++getuid()                                                               = 2013
++printf("UID %d started us but we we expe"..., 2013UID 2013 started us but we we expect 4242
 )                    = 42
 exit(1 <unfinished ...>
 +++ exited (status 1) +++
@@ -31,29 +34,22 @@ exit(1 <unfinished ...>
 
 Pour modifier l'uid nous utilisons gdb et desassemblons le main pour comprendre les différents appels de fonction.
 
-``` bash
+```Diff
 level13@SnowCrash:~$ ./level13
 UID 2013 started us but we we expect 4242
+...
 level13@SnowCrash:~$ gdb ./level13
 GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
-Copyright (C) 2012 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "i686-linux-gnu".
-For bug reporting instructions, please see:
-<http://bugs.launchpad.net/gdb-linaro/>...
-Reading symbols from /home/user/level13/level13...(no debugging symbols found)...done.
+...
 (gdb) disas main
 Dump of assembler code for function main:
    0x0804858c <+0>:	push   %ebp
    0x0804858d <+1>:	mov    %esp,%ebp
    0x0804858f <+3>:	and    $0xfffffff0,%esp
    0x08048592 <+6>:	sub    $0x10,%esp
-   0x08048595 <+9>:	call   0x8048380 <getuid@plt>
-   0x0804859a <+14>:	cmp    $0x1092,%eax
-   0x0804859f <+19>:	je     0x80485cb <main+63>
++  0x08048595 <+9>:	call   0x8048380 <getuid@plt>
++  0x0804859a <+14>:	cmp    $0x1092,%eax
++  0x0804859f <+19>:	je     0x80485cb <main+63>
    0x080485a1 <+21>:	call   0x8048380 <getuid@plt>
    0x080485a6 <+26>:	mov    $0x80486c8,%edx
    0x080485ab <+31>:	movl   $0x1092,0x8(%esp)
@@ -72,7 +68,9 @@ Dump of assembler code for function main:
    0x080485e9 <+93>:	ret    
 End of assembler dump.
 ```
-Le désassemblage de la fonction `main()` révèle un appel de fonction `getuid()` puis une comparaison (avec le branchement conditionnel `je`) à main+14 entre le registre eax (contenant l'uid de l'utilisateur retourné par `getuid()`) et la représentation hexadécimale de `4242` (`0x1092`). Après cette comparaison le programme jump à main+63 si la valeur de eax est identique à `4242`. La fonction ft_des est appellée à main+70, on suppose qu'elle correspond à une fonction de chiffrement qui permet de récupèrer le token. Si la comparaison révèle deux valeurs différentes le programme est quitté avec `exit` à main+63.
+Le désassemblage de la fonction `main()` révèle un appel de fonction `getuid()` puis une comparaison (avec le branchement conditionnel `je`) à `main+14` entre le registre `eax` (contenant l'uid de l'utilisateur retourné par `getuid()`) et la représentation hexadécimale de `4242` (`0x1092`). 
+
+Après cette comparaison le programme jump à `main+63` si la valeur de `eax` est identique à `4242`. La fonction `ft_des` est appellée à `main+70`, on suppose qu'elle correspond à une fonction de chiffrement qui permet de récupèrer le token. Si la comparaison révèle deux valeurs différentes le programme est quitté avec `exit` à `main+63`.
 
 Par une manipulation des registres via GDB, nous écrasons la valeur de retour de `getuid()` dans `%eax` juste avant l'instruction de comparaison `cmp`.
 On aura alors détourné le flux d'exécution (Control Flow Hijacking).
@@ -93,6 +91,20 @@ Single stepping until exit from function main,
 which has no line number information.
 your token is 2A31L79asukciNyi8uppkEuSx
 
+```
+
+ou
+
+```bash
+b getuid       #breakpoint sur getuid
+
+run            # le programme se lance et se stop a la fonction getuid()
+
+finish         # permet de se positionner juste à la sortie de la fonction getuid()
+
+set $eax=4242  # on set le registre eax à eax=4242
+
+continue       # on relance le programme
 ```
 
 Commandes GDB utiles:
