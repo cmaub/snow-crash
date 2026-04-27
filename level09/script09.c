@@ -1,36 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <string.h>
 
-int main(int argc, char **argv)
+int main(int ac, char **av)
 {
-    if (argc != 2)
-        return -1;
-
-    int fd = open(argv[1], O_RDONLY, O_WRONLY);
-    if (!fd)
-        return -1;
-    
-    char str[1024];
-    int size = read(fd, str, 1024);
-    if (size < 0)
-    {
-        close(fd);
-        return -1;
-    }
-    
-    int count = 0;
-    for (int i = 0; i < size; i++)
-    {
-        
-        if (i == 0)
-            str[i] = str[i];
-        else
-            str[i] = str[i] - count;
-        count++;
-    }
-    printf("%s\n", str);
-    close (fd);
-    return 0;
+	for (int i = 0; i < strlen(av[1]); i++)
+	{
+		printf("%c", av[1][i] - i);
+	}
+	printf("\n");
+	return 0;
 }

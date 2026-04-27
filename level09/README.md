@@ -74,41 +74,24 @@ Nous créons donc un script pour inverser la logique de l'executable level09. Do
 
 ``` bash
 level09@SnowCrash:/tmp$ cat script.c
-#include <fcntl.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
-int	main(int argc, char **argv)
+int main(int ac, char **av)
 {
-	if (argc != 2)
-		return 1;
-
-	int fd = open(argv[1], O_RDONLY);
-	if (fd < 0)
-		return 1;
-	
-	char buffer[1024]; 
-	int size = read(fd, buffer, 1024);
-
-	int i = 0;
-	while (i < size)
+	for (int i = 0; i < strlen(av[1]); i++)
 	{
-		if (buffer[i] == '\n')
-			break;
-		char c = buffer[i] - i;
-		write(1, &c, 1);
-		i++;
+		printf("%c", av[1][i] - i);
 	}
-	write(1, "\n", 1);
-	close(fd);
+	printf("\n");
 	return 0;
 }
 ```
 
 
 ``` bash
-level09@SnowCrash:/tmp$ ./a.out /home/user/level09/token
+level09@SnowCrash:/tmp$ ./a.out $(cat /home/user/level09/token)
 f3iji1ju5yuevaus41q1afiuq
 
 level09@SnowCrash:/tmp$ su flag09
