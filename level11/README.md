@@ -14,12 +14,13 @@ d--x--x--x  1 root    users    340 Aug 30  2015 ..
 
 ```
 
-Nous voyons un script lua, qui est un language interprété (sans compilation). Contrairement aux niveaux précédent, nous avons ici accès au code source direcement, ce qui facilite l'analyse.
+Nous voyons un script `.lua`, qui est un language interprété (sans compilation). Contrairement aux niveaux précédent, nous avons ici accès au code source direcement, ce qui facilite l'analyse.
 
 
 ``` bash
 cat level11.lua
 ```
+
 ``` lua
 
 #!/usr/bin/env lua
@@ -59,7 +60,7 @@ end
 
 ```
 
-En voulant exécuté le script on comprend qu'il crée un serveur à l'adresse de localhost sur lequel on peut se connecter avec le port 5151.
+En voulant exécuter le script on comprend qu'il crée un serveur à l'adresse de localhost sur lequel on peut se connecter avec le port 5151.
 Le serveur est déjà lancé quand on veut lancer le script lua:
 
 ``` bash
@@ -71,7 +72,7 @@ stack traceback:
 	[C]: ?
 ```
 
-"Adress already in use" fait reference au couple 127.0.0.1 5151
+`Adress already in use` fait référence au couple `127.0.0.1:5151`
 L'utilisation de `ps aux` permet de voir qu'un processus est effectivement lancé à partir du fichier `level11.lua`.
 
 
@@ -81,7 +82,7 @@ flag11    1827  0.0  0.0   2892   828 ?        S    11:35   0:00 lua /home/user/
 level11   2214  0.0  0.0   4380   820 pts/1    S+   15:02   0:00 grep --color=auto lua
 ```
 
-On va donc se connecter au serveur avec nc, l'adresse et le port.
+On va donc se connecter au serveur avec `nc`, l'adresse et le port.
 On ne veut pas juste écouter sur le serveur mais cette fois-ci envoyer des données depuis localhost donc on utilise pas le flag `-l`.
 
 ``` bash
@@ -97,23 +98,25 @@ Password: f05d1d066fb246efe0c6f7d095f909a7a0cf34a0
 Erf nope..
 ```
 
-La faille se trouve dans le script .lua.
+La faille se trouve dans le script `.lua`.
 Un serveur est mis en place, qui accepte les connexions d'un client. 
 Le texte envoyé par le client en guise de mot de passe passe par la fonction `hash()` qui fait appel à la fonction `io.popen()`. Cette fonction invoque un shell (techniquement, elle ouvre un pipe vers un processus dérivé). 
 
 Son prototype se présente de cette manière en lua :
+
 ```lua 
 io.popen(prog[,mode])
 ```
 
 On va pouvoir faire une substitution de commande dans cette partie:
+
 ``` lua
 io.popen("echo "..pass.." | sha1sum", "r")
 ```
 Dans cette commande `echo()` attend l'argument `pass` (l'entrée du client) inséré via `..` l'opérateur de concaténation en Lua.
-C'est précisément cette fusion non sécurisée entre une chaine fixe et une entrée utilisateur qui crée la faille. Puisque la variable `pass` n'est pas sanitizée, un attaquant peut injecter des métacaractes shell (`$()`, `>`) pour exécuter des commandes arbitraires avec les privilèges du processus (flag11), le bit SUID étant activé
-.
-On va pouvoir injecter la sommande shell `$(getflag)` en la donnant en argument de `echo` puis rediriger sa sortie dans un fichier, sinon elle serait redirigé dans un pipe et transmise ensuite à `sha1sum()` qui transformerait la chaine.
+C'est précisément cette fusion non sécurisée entre une chaine fixe et une entrée utilisateur qui créer la faille. Puisque la variable `pass` n'est pas sanitizée, un attaquant peut injecter des métacaractères shell (`$()`, `>`) pour exécuter des commandes arbitraires avec les privilèges du processus (flag11), le bit SUID étant activé.
+
+On va pouvoir injecter la commande shell `$(getflag)` en la donnant en argument de `echo` puis rediriger sa sortie dans un fichier, sinon elle serait redirigée dans un pipe et transmise ensuite à `sha1sum()` qui transformerait la chaine.
 
 ``` bash
 level11@SnowCrash:~$ nc 127.0.0.1 5151
@@ -121,7 +124,8 @@ Password: $(getflag) > /tmp/test
 Erf nope..
 ```
 
-La commande dan le script sera interprétée comme :
+La commande dans le script sera interprétée comme :
+
 ``` lua
 io.popen("echo "$(getflag) > /tmp/test "| sha1sum", "r")
 ```
@@ -134,6 +138,6 @@ Check flag.Here is your token : fa6v5ateaw21peobuub8ipe6s
 ```
 
 Commandes utiles:
-  - ss -ltnp
-  - netstat -tuln
-  - lsof
+  - `s -ltnp`
+  - `netstat -tuln`
+  - `lsof`
